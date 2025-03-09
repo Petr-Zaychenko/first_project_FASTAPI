@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+  tesseractpython:
+    build: ./
+    image: tesseractpython
+    container_name: tesseractpython
+    volumes:
+      - .:/opt
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - postgres
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - BROKER_URL=pyamqp://${BROKER_USER}:${BROKER_PASS}@rabbitmq:${BROKER_PORT}//
+      - BACKEND_URL=rpc://
+  celery:
+      build:
+        context: .
+        dockerfile: Dockerfile.celery
+      depends_on:
+        - rabbitmq
+        - postgres
+      environment:
+        - DB_HOST=${DB_HOST}
+        - DB_USER=${DB_USER}
+        - DB_PASS=${DB_PASS}
+        - DB_NAME=${DB_NAME}
+        - DB_PORT=${DB_PORT}
+        - BROKER_URL=pyamqp://${BROKER_USER}:${BROKER_PASS}@rabbitmq:${BROKER_PORT}//
+        - BACKEND_URL=rpc://
+  rabbitmq:
+      image: rabbitmq:3.9-management
+      ports:
+        - "5672:5672"  # Порт для RabbitMQ
+        - "15672:15672"  # Порт для управления RabbitMQ (веб-интерфейс)
+      environment:
+        RABBITMQ_DEFAULT_USER: ${BROKER_USER}
+        RABBITMQ_DEFAULT_PASS: ${BROKER_PASS}
+      volumes:
+        - rabbitmq_data:/var/lib/rabbitmq
+
+
+  postgres:
+    image: postgres:17.0
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres2:
+    image: postgres:17.0
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5435:5433"
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  postgres_data2:
