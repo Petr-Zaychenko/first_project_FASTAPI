@@ -1,0 +1,43 @@
+# Виртуальные окружения
+.venv/
+venv/
+env/
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+
+# Файлы IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.bak
+
+# Файлы зависимостей
+Pipfile.lock
+
+# Отчеты о покрытии кода
+htmlcov/
+.coverage
+
+# Папки для сборки
+dist/
+build/
+*.egg-info/
+
+# Конфиденциальные данные
+.env
+secrets.json
+
+
+# Игнорировать .dockerignote (если это опечатка, исправьте на .dockerignore)
+.dockerignote
+
+# Игнорировать папки UPLOAD_FILES
+second_dir/UPLOAD_FILES/
+second_dir/tests/UPLOAD_FILES/
