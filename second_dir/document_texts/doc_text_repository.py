@@ -1,21 +1,9 @@
-from sqlalchemy import select
 from second_dir.document_texts.doc_text_models import Documents_text
-from second_dir.document_texts.schemas_doc_text import Documents_text_schema_add
 from second_dir.settings_dir.engine_file import new_session
 from second_dir.global_funk.global_repo import BaseRepo
 
 
 class DocumentsTextRepository(BaseRepo):
-    # @classmethod
-    # async def add_document(cls,  doc_text: Documents_text_schema_add):
-    #     async with new_session() as session:
-    #         doc_dict = doc_text.model_dump()  # превращаем в словарь
-    #         doc = Documents_text(**doc_dict)  # передаем раскрытый словарь с помощью кваргов
-    #         session.add(doc)
-    #         await session.flush()
-    #         await session.commit()
-    #         return doc.id
-
     @classmethod
     async def add_document(cls, doc_id: int, text: str):
         async with new_session() as session:

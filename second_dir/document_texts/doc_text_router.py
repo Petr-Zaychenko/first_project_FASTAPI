@@ -13,7 +13,8 @@ router = APIRouter(
 )
 
 @router.post("/add_text", summary="Создание Documents_text",
-            description="Добавляет в БД запись")
+            description="Добавляет в БД запись", deprecated=True,
+             status_code=status.HTTP_201_CREATED, )
 async def rout_add_doc_text(request: Documents_text_schema_add = Depends()):
     # Извлекаем id и doc_text из тела запроса
     doc_text_id = await DocumentsTextRepository.add_document(request.id_doc, request.text)
@@ -26,7 +27,8 @@ async def rout_get_doc_text_all():
     return {"data": doc_text}
 
 @router.delete("/del_doc_text/{del_id}", summary="Удаление Documents_text по id",
-            description="Удаляет запись в БД по id документ_текст")
+            description="Удаляет запись в БД по id документ_текст",
+               status_code=status.HTTP_204_NO_CONTENT)
 async def rout_del_doc_text(del_id: int):
     del_doc_text = await DocumentsTextRepository.del_doc_text(del_id)
     if del_doc_text is None:
@@ -34,7 +36,8 @@ async def rout_del_doc_text(del_id: int):
     return {"ok": True, "massage": f"Текст Документа с id {del_id} - был удален"}
 
 @router.post("/doc_analyse", summary="text inside images",
-            description="Возвращает статус-код операции, и сообщение и с нформацией о проделанной работе")
+            description="Возвращает статус-код операции, и сообщение и с нформацией о проделанной работе",
+             status_code=status.HTTP_201_CREATED)
 async def text_inside_image(id: int):
     img_path = await DocumentsRepository.get_path_img_from_id(id)
     if not img_path:
@@ -42,10 +45,4 @@ async def text_inside_image(id: int):
                 "message": f"Файла с id{id} нет"
                 }
     text_inside_image_celery.delay(id, img_path)
-    return {"status": HTTPStatus.ACCEPTED,
-            "message": f"Успешно добавлена в очередь"
-            }
-
-
-# @router.get("get_task",)
-# async def get_task_rmq()
+    return {"message": f"Успешно добавлена в очередь"}

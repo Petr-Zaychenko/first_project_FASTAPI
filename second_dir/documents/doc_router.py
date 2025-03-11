@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 @router.post("/add", summary="Добавить документ",
-            description="Создает документ в БД", deprecated=True)
+            description="Создает документ в БД", deprecated=True, status_code=status.HTTP_201_CREATED)
 async def rout_doc_add(document: Documents_schema_add = Depends()):
     document_id = await DocumentsRepository.add_document(document)
     return {"ok": True}
@@ -30,7 +30,8 @@ async def rout_doc_get_all():
 
 
 @router.post("/upload_docs/one", summary="Скачать один файл",
-            description="Возвращает 'ОК' когда файл скачался, так же создает запись с путём файла")
+            description="Возвращает 'ОК' когда файл скачался, так же создает запись с путём файла",
+             status_code=status.HTTP_201_CREATED)
 async def upload_doc_one(upload_file: UploadFile):
     file = upload_file.file
     filename = upload_file.filename
@@ -44,7 +45,8 @@ async def upload_doc_one(upload_file: UploadFile):
 
 @router.delete("/del/{item_id}",
                summary="Удаление Документа",
-                description="Удаляет документ по id ")
+                description="Удаляет документ по id ",
+               status_code=status.HTTP_204_NO_CONTENT)
 async def del_document(item_id: int):
     logger.info(f"Попытка удаления документа с id {item_id}")
     del_doc = await DocumentsRepository.del_doc(item_id)

@@ -11,9 +11,12 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
     DB_PORT: int
-    BROKER_USER: str = Field(default="guest")
-    BROKER_PASS: str = Field(default="guest")
-    BROKER_PORT: int = Field(default=5672)
+    BROKER_USER: str
+    BROKER_PASS: str
+    BROKER_PORT: int
+    BROKER_PORT_WEB: int
+    HOST_PORT: int
+    APP_PORT: int
 
     @property
     def DATABASE_URL_asyncpg(self):

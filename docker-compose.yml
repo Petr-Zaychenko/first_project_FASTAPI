@@ -8,11 +8,13 @@ services:
     volumes:
       - .:/opt
   app:
+    volumes:
+      - ./second_dir/UPLOAD_FILES:/second_dir/UPLOAD_FILES
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${APP_PORT}:${APP_PORT}"
     depends_on:
       - rabbitmq
       - postgres
@@ -25,6 +27,8 @@ services:
       - BROKER_URL=pyamqp://${BROKER_USER}:${BROKER_PASS}@rabbitmq:${BROKER_PORT}//
       - BACKEND_URL=rpc://
   celery:
+      volumes:
+        - ./second_dir/UPLOAD_FILES:/second_dir/UPLOAD_FILES
       build:
         context: .
         dockerfile: Dockerfile.celery
@@ -42,8 +46,8 @@ services:
   rabbitmq:
       image: rabbitmq:3.9-management
       ports:
-        - "5672:5672"  # Порт для RabbitMQ
-        - "15672:15672"  # Порт для управления RabbitMQ (веб-интерфейс)
+        - "${BROKER_PORT}:${BROKER_PORT}"  # Порт для RabbitMQ
+        - "${BROKER_PORT_WEB}:${BROKER_PORT_WEB}"  # Порт для управления RabbitMQ (веб-интерфейс)
       environment:
         RABBITMQ_DEFAULT_USER: ${BROKER_USER}
         RABBITMQ_DEFAULT_PASS: ${BROKER_PASS}
@@ -58,7 +62,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5434:5432"
+      - "${HOST_PORT}:${DB_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
