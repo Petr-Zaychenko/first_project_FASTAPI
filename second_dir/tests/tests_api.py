@@ -1,9 +1,9 @@
 from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import patch, AsyncMock, MagicMock
-
+import logging
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from httpx import AsyncClient, ASGITransport
 
 import second_dir.task.tasks
@@ -42,7 +42,8 @@ class Test_1():
                                    base_url="http://test") as ac:
                 response = await ac.get("/documents/get_all")
                 print(response.json())
-                assert response.status_code == 200
+                logging.warning(f"Для отладки.  response.json(): {response.json()} ")
+                assert response.status_code == status.HTTP_200_OK
 
                 expected_data = [
                     {"id": doc.id, "path": doc.path, "date_create": doc.date_create.isoformat()}
@@ -68,8 +69,8 @@ class Test_2():
                                    base_url="http://test") as ac:
                 request_data = {"id_doc": 1, "text": "новый текст"}
                 response = await ac.post("/documents_text/add_text", params=request_data)
-                print(response.json())
-                assert response.status_code == 200
+                logging.warning(f"Для отладки.  response.json(): {response.json()} ")
+                assert response.status_code == status.HTTP_200_OK
 
                 assert response.json() == {"ok": True, "doc_text_id": 1}
 
@@ -88,9 +89,8 @@ class Test_2():
             async with AsyncClient(transport=ASGITransport(app=app),
                                    base_url="http://test") as ac:
                 response = await ac.get("/documents_text/get_all_text")
-                print(response.json())
-                assert response.status_code == 200
-
+                logging.warning(f"Для отладки.  response.json(): {response.json()} ")
+                assert response.status_code == status.HTTP_200_OK
                 expected_data = [
                     {"id": doc_text.id, "id_doc": doc_text.id_doc, "text": doc_text.text}
                     for doc_text in mock_fake_data
@@ -109,8 +109,8 @@ class Test_2():
                                    base_url="http://test") as ac:
                 del_id = 1
                 response = await ac.delete(f"/documents_text/del_doc_text/{del_id}")
-                print(response.json())
-                assert response.status_code == 200
+                logging.warning(f"Для отладки.  response.json(): {response.json()} ")
+                assert response.status_code == status.HTTP_200_OK
                 assert response.json() == {"ok": True, "massage": f"Текст Документа с id {del_id} - был удален"}
 
     @pytest.mark.asyncio
@@ -140,23 +140,23 @@ class Test_2():
 class Test_easy_breasy_api():
     def test_can_call_endpoint(self):
         response_false = requests.get(ENDPOINT)
-        assert response_false.status_code == 404
+        assert response_false.status_code == status.HTTP_404_NOT_FOUND
 
         response_true = requests.get(ENDPOINT+"documents/get_all")
-        assert response_true.status_code == 200
+        assert response_true.status_code == status.HTTP_200_OK
     def test_can_add_doc(self):
         fake_path = {"path": "У самурая есть только путь. Вечером снова в дорогу"}
         response = requests.post(ENDPOINT + "documents/add", params=fake_path)
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == {"ok": True}
 
         fake_path2 = {"path": "Второй путь самурая"}
         response2 = requests.post(ENDPOINT + "documents/add", params=fake_path2)
-        assert response2.status_code == 200
+        assert response2.status_code == status.HTTP_200_OK
         assert response2.json() == {"ok": True}
     def test_can_get_all_doc(self):
         response = requests.get(ENDPOINT+"documents/get_all")
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         result = response.json()
 
         assert len(result["data"]) == 2
@@ -175,28 +175,28 @@ class Test_easy_breasy_api():
             files = {"upload_file": f}
             response = requests.post(ENDPOINT + "documents/upload_docs/one", files=files)
 
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         assert response.json() == {"ok": True}
     def test_can_del_one_doc(self):
         item_id = 2
 
         #Проверяем
         response_get_all = requests.get(ENDPOINT + "documents/get_all")
-        assert response_get_all.status_code == 200, "Не удалось получить список документов"
+        assert response_get_all.status_code == status.HTTP_200_OK, "Не удалось получить список документов"
         documents = response_get_all.json().get("data", [])
         document_to_delete = next((doc for doc in documents if doc.get("id") == item_id), None)
         assert document_to_delete is not None, f"Документ с ID {item_id} не найден"
-        print(f"Документ для удаления: {document_to_delete}")  # Для отладки
+        logging.warning(f"Документ для удаления:  document_to_delete: {document_to_delete} ")
 
         #Удаляем
         response_delete = requests.delete(ENDPOINT + f"documents/del/{item_id}")
-        assert response_delete.status_code == 200, "Не удалось удалить документ"
+        assert response_delete.status_code == status.HTTP_200_OK, "Не удалось удалить документ"
         result = response_delete.json()
-        print(f"Результат удаления: {result}")
+        logging.warning(f"Результат удаления: {result}")
 
         #Надо удостовериться
         response_get_all_after_delete = requests.get(ENDPOINT + "documents/get_all")
-        assert response_get_all_after_delete.status_code == 200, "Не удалось получить список документов после удаления"
+        assert response_get_all_after_delete.status_code == status.HTTP_200_OK, "Не удалось получить список документов после удаления"
         documents_after_delete = response_get_all_after_delete.json().get("data", [])
         assert item_id not in [doc.get("id") for doc in
                                documents_after_delete], f"Документ с ID {item_id} все еще существует"

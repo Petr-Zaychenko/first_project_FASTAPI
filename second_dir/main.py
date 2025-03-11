@@ -1,24 +1,26 @@
 from fastapi import FastAPI
 import uvicorn
+import logging
 from second_dir.documents.doc_router import router as router_doc
 from second_dir.document_texts.doc_text_router import router as router_doc_text
+from second_dir.global_funk.routers import all_routers
 from second_dir.settings_dir.func_for_job import drop_table, create_table
 from contextlib import asynccontextmanager
-
-
-# from second_dir.document_texts.doc_text_router import ????
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await drop_table()
-    print("##############################################        бд удалена")
+    logging.warning(f"Внимание. База данных УДАЛЕНА ")
     await create_table()
-    print("##############################################        бд создана")
+    logging.warning(f"Внимание. База данных СОЗДАНА ")
     yield
-    print("##############################################        Выключение")
+    logging.warning(f"Внимание. Происходит Отключение | Выключение | Отсоединение")
 
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router_doc)
-app.include_router(router_doc_text)
+for router in all_routers:
+    app.include_router(router)
+
+# app.include_router(router_doc)
+# app.include_router(router_doc_text)

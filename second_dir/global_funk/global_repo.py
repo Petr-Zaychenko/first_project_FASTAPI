@@ -20,4 +20,4 @@ class BaseRepo:
                 return None
             await session.delete(items)
             await session.commit()
-            return items.id
+            return items

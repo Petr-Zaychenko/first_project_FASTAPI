@@ -1,8 +1,5 @@
 from http import HTTPStatus
-
-
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from second_dir.document_texts.doc_text_models import Documents_text
 from second_dir.document_texts.doc_text_repository import DocumentsTextRepository
 from second_dir.documents.doc_repository import DocumentsRepository
@@ -33,7 +30,7 @@ async def rout_get_doc_text_all():
 async def rout_del_doc_text(del_id: int):
     del_doc_text = await DocumentsTextRepository.del_doc_text(del_id)
     if del_doc_text is None:
-        raise HTTPException(status_code=404, detail=f"Текст Документа с id {del_id} не найден")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Текст Документа с id {del_id} не найден")
     return {"ok": True, "massage": f"Текст Документа с id {del_id} - был удален"}
 
 @router.post("/doc_analyse", summary="text inside images",

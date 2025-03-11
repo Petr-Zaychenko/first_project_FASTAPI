@@ -2,9 +2,10 @@ from sqlalchemy import select
 from second_dir.documents.doc_models import Documents
 from second_dir.documents.schemas_doc import Documents_schema_add, Documents_schema_get
 from second_dir.settings_dir.engine_file import new_session
+from second_dir.global_funk.global_repo import BaseRepo
 
 
-class DocumentsRepository:
+class DocumentsRepository(BaseRepo):
     @classmethod
     async def add_document(cls, path: Documents_schema_add):
         async with new_session() as session:
@@ -17,11 +18,7 @@ class DocumentsRepository:
 
     @classmethod
     async def get_document_all(cls):
-        async with new_session() as session:
-            query = select(Documents)
-            result = await session.execute(query)
-            documents = result.scalars().all()
-            return documents
+            return await cls.get_all(Documents)
 
     @classmethod
     async def get_path_img_from_id(cls, id):
@@ -41,10 +38,4 @@ class DocumentsRepository:
 
     @classmethod
     async def del_doc(cls, del_id: int):
-        async with new_session() as session:
-            document = await session.get(Documents, del_id)
-            if document is None:
-                return None
-            await session.delete(document)
-            await session.commit()
-            return document.id
+        return await cls.del_doc_or_doc_text(del_id, Documents)
